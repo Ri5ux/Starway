@@ -1,16 +1,28 @@
-.gradle
-.settings
-bin
-build
-config
-crash-reports
-logs
-mods
-resourcepacks
-saves
-eclipse
-screenshots
-.classpath
-.project
-options.txt
-usernamecache.json
+# Everything
+/*
+
+# Directories
+!/src
+!/gradle
+
+# files
+!/.gitignore
+!/.gitmodules
+!/CONTRIBUTING.MD
+!/LICENSE.txt
+!/README.md
+!/gradle.properties
+!/build.gradle
+!/gradlew
+!/gradlew.bat
+!/.travis.yml
+!/travisSetup.sh
+.DS_Store
+
+# Do not include gradle.properties, in contains sensitive information.
+# Create an empty file called gradle.properties and enter the following:
+#
+# curseForgeApiKey=00000-00000-00000-00000-00000
+#
+gradle.properties
+mdxlib_at.cfg
