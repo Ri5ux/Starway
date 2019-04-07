@@ -1,0 +1,16 @@
+[
+{
+  "modid": "starway",
+  "name": "Starway Mod",
+  "description": "The Starway mod is a mod that adds galactical travel and exploration to Minecraft.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Ri5ux"],
+  "credits": "The Arisux Technology Group Software Development Team",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

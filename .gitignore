@@ -1,0 +1,16 @@
+.gradle
+.settings
+bin
+build
+config
+crash-reports
+logs
+mods
+resourcepacks
+saves
+eclipse
+screenshots
+.classpath
+.project
+options.txt
+usernamecache.json
