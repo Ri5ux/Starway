@@ -149,7 +149,7 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
             int planetSize = (int) (getObjectSize());
             ModelSphere sphere = new ModelSphere();
             Color color = new Color(0.0F, 0.0F, 0.0F, 0.5F);
-            Color color2 = new Color(1F, 1F, 1F, 0.8F);
+            Color color2 = new Color(1F, 0.4F, 0F, 1F);
 
             OpenGL.enableBlend();
             OpenGL.blendClear();
@@ -158,7 +158,7 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
             for (int i = 20; i > 0; i--)
             {
                 OpenGL.pushMatrix();
-                OpenGL.rotate(Minecraft.getMinecraft().world.getWorldTime() % 360 + partialTicks, 0, 1, 0);
+                OpenGL.rotate((Minecraft.getMinecraft().world.getWorldTime() % 360 * 3) + partialTicks, 0, 1, 0);
                 sphere.cull = false;
                 sphere.setScale((planetSize / 100) + i * 3);
                 sphere.setColor(i == 20 ? color2 : color);
