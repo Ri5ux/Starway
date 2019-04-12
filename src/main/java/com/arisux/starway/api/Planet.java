@@ -12,6 +12,7 @@ import com.asx.mdx.lib.client.util.OpenGL;
 import com.asx.mdx.lib.world.Dimension;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.event.world.WorldEvent.Load;
@@ -140,36 +141,39 @@ public abstract class Planet extends OrbitableObject implements IPlanet
     @Override
     public void render(float partialTicks)
     {
-        Vec3d fogColor = provider != null ? provider.getFogColor(0F, 0F) : new Vec3d(0F, 0F, 0F);
-        int planetSize = (int) (SpaceManager.instance.getPlanetaryScale() * getObjectSize());
+        Vec3d fogColor = provider != null ? provider.getFogColor(0F, 0F) : new Vec3d(0.75F, 0.65F, 0.4F);
 
+        OpenGL.pushMatrix();
         OpenGL.disableCullFace();
         OpenGL.enableRescaleNormal();
-        OpenGL.scale(-1F, 1F, 1F);
+        OpenGL.scale(1F, -1F, 1F);
 
         if (sphere != null)
         {
-            OpenGL.enableBlend();
-            OpenGL.blendClear();
+//            OpenGL.enableBlend();
+//            OpenGL.blendClear();
             OpenGL.disableTexture2d();
             Minecraft.getMinecraft().entityRenderer.enableLightmap();
+            GlStateManager.enableLighting();
 
             GL11.glEnable(GL11.GL_LIGHTING);
-            GL11.glEnable(GL11.GL_LIGHT0);
-            GL11.glEnable(GL11.GL_LIGHT1);
+//            GL11.glEnable(GL11.GL_LIGHT0);
+//            GL11.glEnable(GL11.GL_LIGHT1);
             GL11.glEnable(GL11.GL_COLOR_MATERIAL);
             GL11.glColorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
 
+//            OpenGL.rotate(180F, 0, 1, 0);
             sphere.cull = false;
-            sphere.setScale(planetSize);
+            sphere.setScale((SpaceManager.instance.getPlanetaryScale() * getObjectSize()));
             sphere.setColor(new Color((float) fogColor.x, (float) fogColor.y, (float) fogColor.z, 1F));
             sphere.render();
             Minecraft.getMinecraft().entityRenderer.disableLightmap();
-            OpenGL.disableLighting();
+//            OpenGL.disableLighting();
             OpenGL.enableTexture2d();
-            OpenGL.disableBlend();
+//            OpenGL.disableBlend();
         }
         OpenGL.disableRescaleNormal();
         OpenGL.enableCullFace();
+        OpenGL.popMatrix();
     }
 }
