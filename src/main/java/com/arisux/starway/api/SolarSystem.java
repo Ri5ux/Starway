@@ -1,5 +1,7 @@
 package com.arisux.starway.api;
 
+import static org.lwjgl.opengl.GL11.GL_ONE;
+
 import java.util.ArrayList;
 
 import org.lwjgl.opengl.GL11;
@@ -61,7 +63,7 @@ public abstract class SolarSystem extends OrbitableObject implements ISolarSyste
             planet.onTick(event);
         }
     }
-    
+
     @Override
     public void onGlobalTick(WorldTickEvent event)
     {
@@ -192,36 +194,50 @@ public abstract class SolarSystem extends OrbitableObject implements ISolarSyste
 
         this.drawSun(partialTicks);
     }
-    
+
+    private final ModelSphere sphere = new ModelSphere();
+    private final Color       color  = new Color(1.0F, 0.3F, 0.0F, 1F);
+    private final Color       color3 = new Color(1F, 0.3F, 0F, 1F);
+
     protected void drawSun(float partialTicks)
     {
+        int size = (int) (getObjectSize() * SpaceManager.instance.getStarScale()) / 100;
+        
         OpenGL.pushMatrix();
-        {
-            int planetSize = (int) (getObjectSize() * SpaceManager.instance.getStarScale());
-            ModelSphere sphere = new ModelSphere();
-            Color color = new Color(1F, 0.7F, 0F, 0.3F);
 
-            OpenGL.enableBlend();
-            OpenGL.blendClear();
-            OpenGL.disableTexture2d();
-            OpenGL.enableLighting();
-            OpenGL.enableDepthTest();
-            OpenGL.blendFunc(GL11.GL_SRC_ALPHA, 1);
-            
-            for (int i = 10; i > 0; i--)//10
-            {
-                OpenGL.pushMatrix();
-                OpenGL.rotate(Minecraft.getMinecraft().world.getWorldTime() % 360 * i + partialTicks, 0, 1, 0);
-                sphere.cull = false;
-                sphere.setScale((planetSize) + i * 3);
-                sphere.setColor(color);
-                sphere.render();
-                OpenGL.popMatrix();
-            }
-            
-            OpenGL.enableTexture2d();
-            OpenGL.disableBlend();
+        float s = 0.5F;
+        OpenGL.scale(s, s, s);
+        OpenGL.enableBlend();
+        OpenGL.blendClear();
+        OpenGL.disableTexture2d();
+        OpenGL.enableLighting();
+        GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+        GL11.glColorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
+
+        OpenGL.pushMatrix();
+        sphere.cull = false;
+        sphere.setScale(size + (50));
+        OpenGL.scale(1.1F, 1F, 1.1F);
+        sphere.setColor(color3);
+        sphere.render();
+        OpenGL.popMatrix();
+
+        OpenGL.blendFunc(GL_ONE, GL_ONE);
+
+        for (int i = 6; i > 0; i--)
+        {
+            OpenGL.pushMatrix();
+            OpenGL.rotate((Minecraft.getMinecraft().world.getWorldTime() % 360 * 3) + partialTicks, 1, 1, 0);
+            sphere.cull = false;
+            sphere.setScale(size + (49 + i) * 1);
+            sphere.setColor(i == 5 ? color : color);
+            sphere.render();
+            OpenGL.popMatrix();
         }
+
+        OpenGL.enableLightMapping();
+        OpenGL.enableTexture2d();
+        OpenGL.disableBlend();
         OpenGL.popMatrix();
     }
 }
