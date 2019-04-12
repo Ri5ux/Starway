@@ -45,32 +45,6 @@ public class SolarSystemTest extends SolarSystem implements ISolarSystem
     @Override
     protected void drawSun(float partialTicks)
     {
-//        OpenGL.pushMatrix();
-//        {
-//            int planetSize = (int) (Renderer.instance.getPlanetDrawScale() * solarsystem.getObjectSize());
-//            ModelSphere sphere = new ModelSphere();
-//            Color color = new Color(0.2F, 0.7F, 1F, 0.15F);
-//
-//            OpenGL.enableBlend();
-//            OpenGL.blendClear();
-//            OpenGL.disableTexture2d();
-////            OpenGL.disableDepthTest();
-//            OpenGL.blendFunc(GL11.GL_SRC_ALPHA, 1);
-//            
-//            for (int i = 10; i > 0; i--)
-//            {
-//                OpenGL.pushMatrix();
-//                OpenGL.rotate(Minecraft.getMinecraft().theWorld.getWorldTime() % 360 * i + Game.partialTicks(), 0, 1, 0);
-//                sphere.drawInternalVertices = false;
-//                sphere.setScale((planetSize / 100) + i * 3);
-//                sphere.setColor(color);
-//                sphere.render();
-//                OpenGL.popMatrix();
-//            }
-//            
-//            OpenGL.enableTexture2d();
-//            OpenGL.disableBlend();
-//        }
-//        OpenGL.popMatrix();
+        super.drawSun(partialTicks);
     }
 }
