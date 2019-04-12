@@ -127,9 +127,9 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
     
     public void render(float partialTicks)
     {
-        this.drawBlackHole(partialTicks);
+//        this.drawBlackHole(partialTicks);
         
-        //OpenGL.translate(-pos().x, -pos().y, -pos().z);
+        OpenGL.translate(-pos().x, -pos().y, -pos().z);
 
         for (SolarSystem solarsystem : getSolarSystems())
         {
@@ -140,28 +140,39 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
             }
             OpenGL.popMatrix();
         }
+        OpenGL.blendClear();
     }
+
+    ModelSphere sphere = new ModelSphere();
     
     public void drawBlackHole(float partialTicks)
     {
         OpenGL.pushMatrix();
         {
-            int planetSize = (int) (getObjectSize());
-            ModelSphere sphere = new ModelSphere();
-            Color color = new Color(0.0F, 0.0F, 0.0F, 0.5F);
+            int size = (int) (getObjectSize());
+            Color color = new Color(0.0F, 0.0F, 0.0F, 0.6F);
             Color color2 = new Color(1F, 0.4F, 0F, 1F);
+            Color color3 = new Color(1F, 1F, 1F, 0.12F);
 
             OpenGL.enableBlend();
             OpenGL.blendClear();
             OpenGL.disableTexture2d();
 
-            for (int i = 20; i > 0; i--)
+            OpenGL.pushMatrix();
+            sphere.cull = false;
+            sphere.setScale((size / 100) + (50 * 1) * 1);
+            OpenGL.scale(1.1F, 1F, 1.1F);
+            sphere.setColor(color3);
+            sphere.render();
+            OpenGL.popMatrix();
+
+            for (int i = 5; i > 0; i--)
             {
                 OpenGL.pushMatrix();
-                OpenGL.rotate((Minecraft.getMinecraft().world.getWorldTime() % 360 * 3) + partialTicks, 0, 1, 0);
+                OpenGL.rotate((Minecraft.getMinecraft().world.getWorldTime() % 360 * 3) + partialTicks, 1, 1, 1);
                 sphere.cull = false;
-                sphere.setScale((planetSize / 100) + i * 3);
-                sphere.setColor(i == 20 ? color2 : color);
+                sphere.setScale((size / 100) + (50 + i) * 1);
+                sphere.setColor(i == 5 ? color : color);
                 sphere.render();
                 OpenGL.popMatrix();
             }
