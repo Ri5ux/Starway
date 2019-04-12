@@ -3,6 +3,7 @@ package com.arisux.starway;
 import java.util.ArrayList;
 
 import com.arisux.starway.api.IPlanet;
+import com.arisux.starway.api.IPlanetWorldProvider;
 import com.arisux.starway.api.OrbitableObject;
 import com.arisux.starway.dimensions.DimensionSpace;
 import com.arisux.starway.dimensions.space.SpaceProvider;
@@ -17,12 +18,15 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldProviderSurface;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 
 public class SpaceManager implements IInitEvent
 {
     public static final SpaceManager instance = new SpaceManager();
     private ArrayList<OrbitableObject> objectsInSpace = new ArrayList<OrbitableObject>();
+    
+    public static final double DEFAULT_GRAVITY_LEVEL = 0.08D;
     
     /** TODO: Currently starts at 0 each world load, should be stored and loaded back each time a world loads **/
     private long spacetime;
@@ -39,7 +43,7 @@ public class SpaceManager implements IInitEvent
     }
 
     @SubscribeEvent
-    public void onWorldTick(WorldTickEvent event)
+    public void onWorldTick(TickEvent.WorldTickEvent event)
     {
         this.spacetime++;
         
@@ -53,9 +57,28 @@ public class SpaceManager implements IInitEvent
 
                 if (event.world != null)
                 {
+                    if (entity.world.provider instanceof SpaceProvider)
+                    {
+                        entity.setNoGravity(true);
+                    }
+                    else
+                    {
+                        entity.setNoGravity(false);
+                    }
+                    
                     if (entity instanceof EntityPlayer)
                     {
                         EntityPlayer player = (EntityPlayer) entity;
+                        
+                        if (entity.world.provider instanceof SpaceProvider)
+                        {
+//                            float multiplier = 100F;
+//                            player.motionX = player.motionX * multiplier;
+//                            player.motionY = player.motionY * multiplier;
+//                            player.motionZ = player.motionZ * multiplier;
+//                            player.setDead();
+//                            System.out.println("test");
+                        }
                         
 //                        player.worldObj.setBlock((int)player.posX, (int)player.posY, (int)player.posZ, Blocks.diamond_block);
 
@@ -82,16 +105,26 @@ public class SpaceManager implements IInitEvent
                                 Starway.dimensions().transferPlayerToDimension(playerMP, DimensionSpace.instance, new Pos(player));
                             }
                         }
-
-                        if (player.posY <= 1 && entity.world.provider instanceof SpaceProvider)
-                        {
-                            player.setPositionAndUpdate(player.posX, 512, player.posZ);
-                        }
                     }
                 }
             }
         }
     }
+    
+    public static double getGravityLevel(Entity entity)
+    {
+        if (entity.world.provider instanceof IPlanetWorldProvider)
+        {
+            IPlanetWorldProvider planetWorldProvider = (IPlanetWorldProvider) entity.world.provider;
+            
+            return DEFAULT_GRAVITY_LEVEL - planetWorldProvider.getGravityLevel();
+        }
+        else
+        {
+            return DEFAULT_GRAVITY_LEVEL;
+        }
+    }
+
 
     public long getTime()
     {
@@ -110,7 +143,7 @@ public class SpaceManager implements IInitEvent
     
     public float getPlanetaryDistScale()
     {
-        return 100000000F;//10000000F
+        return 10000000F;//10000000F
     }
     
     public float getStarScale()
