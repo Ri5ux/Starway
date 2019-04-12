@@ -21,7 +21,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -38,7 +37,6 @@ public class Renderer implements IInitEvent
     public void init(FMLInitializationEvent event)
     {
         MinecraftForge.EVENT_BUS.register(instance);
-        FMLCommonHandler.instance().bus().register(instance);
     }
 
     @SubscribeEvent
