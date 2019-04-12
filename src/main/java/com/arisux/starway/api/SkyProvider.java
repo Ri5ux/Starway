@@ -209,19 +209,19 @@ public abstract class SkyProvider extends IRenderHandler implements IPlanetSkyPr
         OpenGL.enable(GL11.GL_ALPHA_TEST);
         GL11.glDepthMask(true);
         
-//        if (mc.gameSettings.shouldRenderClouds() == 1)
-//        {
-//            OpenGL.pushMatrix();
-//            {
-//                if (mc.gameSettings.fancyGraphics)
-//                {
-//                    OpenGL.enable(GL11.GL_FOG);
-//                }
-//
-//                this.drawCloudsInSky(world, renderPartialTicks);
-//            }
-//            OpenGL.popMatrix();
-//        }
+        if (mc.gameSettings.shouldRenderClouds() == 1)
+        {
+            OpenGL.pushMatrix();
+            {
+                if (mc.gameSettings.fancyGraphics)
+                {
+                    OpenGL.enable(GL11.GL_FOG);
+                }
+
+                this.drawCloudsInSky(world, renderPartialTicks);
+            }
+            OpenGL.popMatrix();
+        }
 
         OpenGL.disable(GL11.GL_FOG);
     }

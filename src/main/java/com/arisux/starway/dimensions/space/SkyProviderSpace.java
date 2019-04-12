@@ -1,8 +1,11 @@
 package com.arisux.starway.dimensions.space;
 
+import org.lwjgl.opengl.GL11;
+
 import com.arisux.starway.api.IPlanetSkyProvider;
 import com.arisux.starway.api.SkyProvider;
 import com.asx.mdx.lib.client.util.Color;
+import com.asx.mdx.lib.client.util.OpenGL;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -49,7 +52,25 @@ public class SkyProviderSpace extends SkyProvider implements IPlanetSkyProvider
     @Override
     public void drawSky(World world, float renderPartialTicks)
     {
-        super.drawSky(world, renderPartialTicks);
+        OpenGL.disable(GL11.GL_FOG);
+        OpenGL.disable(GL11.GL_ALPHA_TEST);
+        OpenGL.enable(GL11.GL_BLEND);
+        OpenGL.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+        this.drawStarsInSky(world, renderPartialTicks);
+
+        OpenGL.color(1F, 1F, 1F, 1F);
+        OpenGL.enable(GL11.GL_TEXTURE_2D);
+        OpenGL.blendFunc(GL11.GL_SRC_ALPHA, 1);
+
+        this.drawPlanetsInSky(world, renderPartialTicks);
+
+        OpenGL.disable(GL11.GL_BLEND);
+        OpenGL.enable(GL11.GL_ALPHA_TEST);
+        GL11.glDepthMask(true);
+        
+        OpenGL.disable(GL11.GL_FOG);
+        OpenGL.blendClear();
     }
 
     @Override
