@@ -20,6 +20,7 @@ public class Resources implements IPreInitEvent
     public final ResourceLocation SKY_CLOUDMAP    = new ResourceLocation("textures/environment/clouds.png");
     
     public final ResourceLocation EARTH = new ResourceLocation("starway", "textures/planets/earth.png");
+    public final ResourceLocation BLACKHOLE_ACCRETION_DISC = new ResourceLocation("starway", "textures/blackholes/accretion_disc.png");
 
     public static class Models
     {

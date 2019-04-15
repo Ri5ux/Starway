@@ -2,13 +2,19 @@ package com.arisux.starway.api;
 
 import java.util.ArrayList;
 
+import org.lwjgl.opengl.GL11;
+
 import com.arisux.starway.ModelSphere;
 import com.arisux.starway.Renderer;
 import com.arisux.starway.SpaceManager;
+import com.arisux.starway.Starway;
 import com.asx.mdx.lib.client.util.Color;
+import com.asx.mdx.lib.client.util.Draw;
 import com.asx.mdx.lib.client.util.OpenGL;
+import com.asx.mdx.lib.util.Game;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.world.WorldEvent.Load;
 import net.minecraftforge.event.world.WorldEvent.Save;
 import net.minecraftforge.event.world.WorldEvent.Unload;
@@ -48,18 +54,18 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
     public void onTick(WorldTickEvent event)
     {
         super.onTick(event);
-        
+
         for (SolarSystem solarSystem : this.getSolarSystems())
         {
             solarSystem.onTick(event);
         }
     }
-    
+
     @Override
     public void onGlobalTick(WorldTickEvent event)
     {
         super.onGlobalTick(event);
-        
+
         for (SolarSystem solarSystem : this.getSolarSystems())
         {
             solarSystem.onGlobalTick(event);
@@ -124,11 +130,9 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
             OpenGL.popMatrix();
         }
     }
-    
+
     public void render(float partialTicks)
     {
-//        this.drawBlackHole(partialTicks);
-        
         OpenGL.translate(-pos().x, -pos().y, -pos().z);
 
         for (SolarSystem solarsystem : getSolarSystems())
@@ -141,41 +145,96 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
             OpenGL.popMatrix();
         }
         OpenGL.blendClear();
+
+        this.drawBlackHole(partialTicks);
+    }
+    
+    @Override
+    public float getAccretionDiscSize()
+    {
+        return 770;
+    }
+    
+    @Override
+    public float getRotation()
+    {
+        return (Game.minecraft().world.getWorldTime() % 360) + Game.partialTicks();
     }
 
-    ModelSphere sphere = new ModelSphere();
-    
+    private final ModelSphere sphere = new ModelSphere();
+    private final Color color = new Color(0.04F, 0.04F, 0.04F, 1F);
+    private final Color color2 = new Color(0F, 0F, 0F, 0.675F);
+    private final Color color3 = new Color(0F, 0F, 0F, 1F);
+    private final Color color4 = new Color(1F, 1F, 1F, 1F);
+
     public void drawBlackHole(float partialTicks)
     {
         OpenGL.pushMatrix();
         {
-            int size = (int) (getObjectSize());
-            Color color = new Color(0.0F, 0.0F, 0.0F, 0.6F);
-            Color color2 = new Color(1F, 0.4F, 0F, 1F);
-            Color color3 = new Color(1F, 1F, 1F, 0.12F);
+            float singularitySize = getObjectSize() == 0F ? 1F : getObjectSize();
+            float discSize = getAccretionDiscSize();
+            float rotation = getRotation();
 
+            OpenGL.rotate(rotation, 0, 1, 0);
             OpenGL.enableBlend();
-            OpenGL.blendClear();
             OpenGL.disableTexture2d();
 
+            /** Fading ring background color **/
             OpenGL.pushMatrix();
             sphere.cull = false;
-            sphere.setScale((size / 100) + (50 * 1) * 1);
-            OpenGL.scale(1.1F, 1F, 1.1F);
+            OpenGL.rotate(rotation, 0, 1, 0);
+            sphere.setScale((singularitySize / 100) + (50 * 1) * 1);
+            OpenGL.scale(1.2F, 1.2F, 1.2F);
+            sphere.setColor(color4);
+            sphere.render();
+            OpenGL.popMatrix();
+            
+            OpenGL.blendClear();
+
+            /** Fading ring around the singularity **/
+            for (int i = 4; i > 0; i--)
+            {
+                OpenGL.pushMatrix();
+                OpenGL.rotate(rotation, 0, 1, 0);
+                sphere.cull = false;
+                sphere.setScale((singularitySize * 51) + (2 * i));
+                sphere.setColor(color2);
+                sphere.render();
+                OpenGL.popMatrix();
+            }
+            
+            OpenGL.blendClear();
+
+            /** Singularity dark matter effect **/
+            OpenGL.pushMatrix();
+            sphere.cull = false;
+            sphere.setScale((singularitySize / 100) + (50 * 1) * 1);
+            OpenGL.scale(1.05F, 1F, 1.05F);
+            sphere.setColor(color);
+            sphere.render();
+            OpenGL.popMatrix();
+            OpenGL.blendClear();
+            OpenGL.pushMatrix();
+            OpenGL.rotate((Game.minecraft().world.getWorldTime() % 360 * 3) + partialTicks, 1, 0, 0);
+            sphere.cull = false;
+            sphere.setScale((singularitySize / 100) + (50 + 1) * 1);
             sphere.setColor(color3);
             sphere.render();
             OpenGL.popMatrix();
 
-            for (int i = 5; i > 0; i--)
-            {
-                OpenGL.pushMatrix();
-                OpenGL.rotate((Minecraft.getMinecraft().world.getWorldTime() % 360 * 3) + partialTicks, 1, 1, 1);
-                sphere.cull = false;
-                sphere.setScale((size / 100) + (50 + i) * 1);
-                sphere.setColor(i == 5 ? color : color);
-                sphere.render();
-                OpenGL.popMatrix();
-            }
+            /** Draw the accretion disc **/
+            OpenGL.pushMatrix();
+            OpenGL.enableBlend();
+            OpenGL.enableTexture2d();
+            OpenGL.disableCullFace();
+            OpenGL.blendClear();
+            OpenGL.blendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_CONSTANT_ALPHA);
+            OpenGL.rotate(90F, 1, 0, 0);
+            Draw.drawResource(Starway.resources().BLACKHOLE_ACCRETION_DISC, Math.round(-(discSize / 2)), Math.round(-(discSize / 2)), Math.round(discSize), Math.round(discSize), 1F, 1F, 1F, 1F);
+            OpenGL.blendClear();
+            OpenGL.enableCullFace();
+            OpenGL.disableTexture2d();
+            OpenGL.popMatrix();
 
             OpenGL.enableTexture2d();
             OpenGL.disableBlend();
