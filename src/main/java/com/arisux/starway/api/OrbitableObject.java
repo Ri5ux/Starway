@@ -8,6 +8,7 @@ import com.arisux.starway.Starway;
 import com.arisux.starway.starships.EntityStarship;
 import com.asx.mdx.lib.client.util.Draw;
 import com.asx.mdx.lib.client.util.OpenGL;
+import com.asx.mdx.lib.util.Game;
 import com.asx.mdx.lib.world.Pos;
 
 import net.minecraft.entity.Entity;
@@ -228,6 +229,12 @@ public abstract class OrbitableObject implements IOrbitableObject
     public Pos pos()
     {
         return this.pos;
+    }
+    
+    @Override
+    public float getRotationYaw()
+    {
+        return (Game.minecraft().world.getWorldTime() % 360) + Game.partialTicks();
     }
 
     @Override

@@ -156,7 +156,7 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
     }
     
     @Override
-    public float getRotation()
+    public float getRotationYaw()
     {
         return (Game.minecraft().world.getWorldTime() % 360) + Game.partialTicks();
     }
@@ -173,7 +173,7 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
         {
             float singularitySize = getObjectSize() == 0F ? 1F : getObjectSize();
             float discSize = getAccretionDiscSize();
-            float rotation = getRotation();
+            float rotation = getRotationYaw();
 
             OpenGL.rotate(rotation, 0, 1, 0);
             OpenGL.enableBlend();

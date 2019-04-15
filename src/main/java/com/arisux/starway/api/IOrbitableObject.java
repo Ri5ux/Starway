@@ -45,6 +45,9 @@ public interface IOrbitableObject
 
     /** The current rotation value in orbit. **/
     public float getOrbitProgress();
+    
+    /** The current rotation of this object relative to itself. **/
+    public float getRotationYaw();
 
     /** The coordinates of this object. **/
     public Pos pos();
