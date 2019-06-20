@@ -47,10 +47,11 @@ public class SolarSystemSol extends SolarSystem implements ISolarSystem
         return "The Solar System";
     }
 
+    /** Distance from the center of the galaxy in light years. **/
     @Override
     public float getDistanceFromObjectOrbiting()
     {
-        return 27000F;
+        return 26092F;
     }
 
     /** Since this is a solar system, this is the size of the sun in the solar system. **/
