@@ -13,8 +13,6 @@ import com.asx.mdx.lib.client.util.Draw;
 import com.asx.mdx.lib.client.util.OpenGL;
 import com.asx.mdx.lib.util.Game;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.world.WorldEvent.Load;
 import net.minecraftforge.event.world.WorldEvent.Save;
 import net.minecraftforge.event.world.WorldEvent.Unload;
@@ -114,13 +112,6 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
     @Override
     public void renderMap(Renderer renderer, OrbitableObject parentObject, float renderPartialTicks)
     {
-        OpenGL.pushMatrix();
-        {
-            OpenGL.translate(this.pos().x, this.pos().z, 0);
-            this.drawObjectTag(renderer, renderPartialTicks);
-        }
-        OpenGL.popMatrix();
-
         for (ISolarSystem solarSystem : this.getSolarSystems())
         {
             OpenGL.pushMatrix();
@@ -129,6 +120,22 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
             }
             OpenGL.popMatrix();
         }
+        
+        OpenGL.pushMatrix();
+        {
+            OpenGL.translate(this.pos().x, this.pos().z, 0);
+            OpenGL.pushMatrix();
+            OpenGL.rotate(90F, 1, 0, 0);
+            this.drawBlackHole(renderPartialTicks);
+            OpenGL.popMatrix();
+            OpenGL.rotate(-renderer.angle, 1, 0, 0);
+            OpenGL.translate(1, 1, 250);
+            float antiScale = 1F / renderer.scale;
+            OpenGL.scale(antiScale, antiScale, 1);
+            Draw.drawStringAlignCenter(this.getName(), 0, 0 - 10 - renderer.getTextPadding() * 2, 0xFF00CCFF, false);
+//            Draw.drawStringAlignCenter(String.format("(X: %s, Z: %s)", this.pos().x, this.pos().z), 0, 0 - renderer.getTextPadding() * 2, 0xFFFFFFFF, false);
+        }
+        OpenGL.popMatrix();
     }
 
     public void render(float partialTicks)
@@ -148,13 +155,13 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
 
         this.drawBlackHole(partialTicks);
     }
-    
+
     @Override
     public float getAccretionDiscSize()
     {
         return 770;
     }
-    
+
     @Override
     public float getRotationYaw()
     {
@@ -162,19 +169,21 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
     }
 
     private final ModelSphere sphere = new ModelSphere();
-    private final Color color = new Color(0.04F, 0.04F, 0.04F, 1F);
-    private final Color color2 = new Color(0F, 0F, 0F, 0.675F);
-    private final Color color3 = new Color(0F, 0F, 0F, 1F);
-    private final Color color4 = new Color(1F, 1F, 1F, 1F);
+    private final Color       color  = new Color(0.04F, 0.04F, 0.04F, 1F);
+    private final Color       color2 = new Color(0F, 0F, 0F, 0.675F);
+    private final Color       color3 = new Color(0F, 0F, 0F, 1F);
+    private final Color       color4 = new Color(1F, 1F, 1F, 1F);
 
     public void drawBlackHole(float partialTicks)
     {
         OpenGL.pushMatrix();
         {
-            float singularitySize = getObjectSize() == 0F ? 1F : getObjectSize();
+            float scale = getObjectSize() == 0F ? 1F : getObjectSize() / 100;
+            float singularitySize = 1F;
             float discSize = getAccretionDiscSize();
             float rotation = getRotationYaw();
 
+            OpenGL.scale(scale, scale, scale);
             OpenGL.rotate(rotation, 0, 1, 0);
             OpenGL.enableBlend();
             OpenGL.disableTexture2d();
@@ -182,14 +191,25 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
             /** Fading ring background color **/
             OpenGL.pushMatrix();
             sphere.cull = false;
+            sphere.invert = true;
             OpenGL.rotate(rotation, 0, 1, 0);
             sphere.setScale((singularitySize / 100) + (50 * 1) * 1);
             OpenGL.scale(1.2F, 1.2F, 1.2F);
             sphere.setColor(color4);
             sphere.render();
             OpenGL.popMatrix();
-            
+
             OpenGL.blendClear();
+            
+            OpenGL.pushMatrix();
+            OpenGL.rotate(rotation, 0, 1, 0);
+            sphere.cull = false;
+            sphere.invert = false;
+            sphere.setScale((singularitySize * 57));
+            sphere.setColor(color3);
+            sphere.render();
+            sphere.invert = true;
+            OpenGL.popMatrix();
 
             /** Fading ring around the singularity **/
             for (int i = 4; i > 0; i--)
@@ -202,25 +222,25 @@ public abstract class Galaxy extends OrbitableObject implements IGalaxy
                 sphere.render();
                 OpenGL.popMatrix();
             }
-            
+
             OpenGL.blendClear();
 
-            /** Singularity dark matter effect **/
-            OpenGL.pushMatrix();
-            sphere.cull = false;
-            sphere.setScale((singularitySize / 100) + (50 * 1) * 1);
-            OpenGL.scale(1.05F, 1F, 1.05F);
-            sphere.setColor(color);
-            sphere.render();
-            OpenGL.popMatrix();
-            OpenGL.blendClear();
-            OpenGL.pushMatrix();
-            OpenGL.rotate((Game.minecraft().world.getWorldTime() % 360 * 3) + partialTicks, 1, 0, 0);
-            sphere.cull = false;
-            sphere.setScale((singularitySize / 100) + (50 + 1) * 1);
-            sphere.setColor(color3);
-            sphere.render();
-            OpenGL.popMatrix();
+//            /** Singularity dark matter effect **/
+//            OpenGL.pushMatrix();
+//            sphere.cull = false;
+//            sphere.setScale((singularitySize / 100) + (50 * 1) * 1);
+//            OpenGL.scale(1.05F, 1F, 1.05F);
+//            sphere.setColor(color);
+//            sphere.render();
+//            OpenGL.popMatrix();
+//            OpenGL.blendClear();
+//            OpenGL.pushMatrix();
+//            OpenGL.rotate((Game.minecraft().world.getWorldTime() % 360 * 3) + partialTicks, 1, 0, 0);
+//            sphere.cull = false;
+//            sphere.setScale((singularitySize / 100) + (50 + 1) * 1);
+//            sphere.setColor(color3);
+//            sphere.render();
+//            OpenGL.popMatrix();
 
             /** Draw the accretion disc **/
             OpenGL.pushMatrix();
