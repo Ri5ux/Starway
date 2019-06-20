@@ -12,6 +12,7 @@ import com.asx.mdx.lib.util.Game;
 import com.asx.mdx.lib.world.Pos;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
@@ -162,6 +163,15 @@ public abstract class OrbitableObject implements IOrbitableObject
                         Starway.dimensions().transferPlayerToDimension(player, planet.getDimension());
                     }
                 }
+                if (entity instanceof EntityPlayer)
+                {
+                    EntityPlayerMP player = (EntityPlayerMP) entity;
+
+                    if (!entity.world.isRemote)
+                    {
+                        Starway.dimensions().transferPlayerToDimension(player, planet.getDimension());
+                    }
+                }
             }
         }
     }
@@ -266,16 +276,20 @@ public abstract class OrbitableObject implements IOrbitableObject
     }
 
     @SideOnly(Side.CLIENT)
-    public static void drawOrbitMarker(float spacing, double x, double y)
+    public static void drawOrbitMarker(Renderer renderer, int markerCount, float spacing, double x, double y)
     {
         float scale = 1F + Renderer.instance.zoom * (Renderer.instance.zoom) / 1;
 
-        for (float i = 360 / spacing; i > 0; i--)
+        for (float i = markerCount; i > 0; i--)
         {
             OpenGL.pushMatrix();
             OpenGL.rotate(i * spacing, 0, 0, 1);
             OpenGL.translate(x, y, 0);
+            OpenGL.rotate(-(i * spacing), 0, 0, 1);
+            OpenGL.rotate(-renderer.angle, 1, 0, 0);
             OpenGL.scale(scale, scale, 1F);
+            float antiScale = 1F / renderer.scale;
+            OpenGL.scale(antiScale, antiScale, 1);
             Draw.drawRect(0, 0, 1, 1, 0xFF00AAFF);
             OpenGL.popMatrix();
         }
