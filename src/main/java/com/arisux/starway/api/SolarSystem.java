@@ -14,6 +14,8 @@ import com.asx.mdx.lib.client.util.Draw;
 import com.asx.mdx.lib.client.util.OpenGL;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.CullFace;
 import net.minecraftforge.event.world.WorldEvent.Load;
 import net.minecraftforge.event.world.WorldEvent.Save;
 import net.minecraftforge.event.world.WorldEvent.Unload;
@@ -146,24 +148,39 @@ public abstract class SolarSystem extends OrbitableObject implements ISolarSyste
     @Override
     public void renderMap(Renderer renderer, OrbitableObject parentObject, float renderPartialTicks)
     {
-        int distance = (int) (SpaceManager.instance.getSolarSystemScale() * this.getDistanceFromObjectOrbiting());
+        int distance = (int) (SpaceManager.instance.getSolarSystemDistScale() * this.getDistanceFromObjectOrbiting());
+
+        OpenGL.pushMatrix();
+        {
+            OpenGL.translate(this.pos().x, this.pos().z, 0);
+            OpenGL.pushMatrix();
+            this.drawSun(renderPartialTicks);
+            OpenGL.disableLight();
+            OpenGL.popMatrix();
+            float antiScale = 1F / renderer.scale;
+            OpenGL.rotate(-renderer.angle, 1, 0, 0);
+            OpenGL.scale(antiScale, antiScale, 1);
+            Draw.drawStringAlignCenter(this.getName(), 0, 0 - 10 - renderer.getTextPadding() * 2, 0xFF00CCFF, false);
+            // Draw.drawStringAlignCenter(String.format("(X: %s, Z: %s)", Math.round(this.pos().x), Math.round(this.pos().z)), 0, 0 - renderer.getTextPadding() * 2, 0xFFFFFFFF, false);
+        }
+        OpenGL.popMatrix();
 
         OpenGL.pushMatrix();
         {
             if (parentObject != null)
             {
                 OpenGL.translate(parentObject.pos().x, parentObject.pos().z, 0);
-                SolarSystem.drawOrbitMarker(1F, distance, 0);
+                SolarSystem.drawOrbitMarker(renderer, Math.round(this.getDistanceFromObjectOrbiting() / 20), 1F, distance, 0);
             }
         }
         OpenGL.popMatrix();
 
-        OpenGL.pushMatrix();
-        {
-            OpenGL.translate(this.pos().x, this.pos().z, 0);
-            this.drawObjectTag(renderer, renderPartialTicks);
-        }
-        OpenGL.popMatrix();
+        // OpenGL.pushMatrix();
+        // {
+        // OpenGL.translate(this.pos().x, this.pos().z, 0);
+        // this.drawObjectTag(renderer, renderPartialTicks);
+        // }
+        // OpenGL.popMatrix();
 
         for (IPlanet planet : this.getPlanets())
         {
@@ -197,15 +214,21 @@ public abstract class SolarSystem extends OrbitableObject implements ISolarSyste
 
     private final ModelSphere sphere = new ModelSphere();
     private final Color       color  = new Color(1.0F, 0.3F, 0.0F, 1F);
+    private final Color       color2 = new Color(1.0F, 0.3F, 0.0F, 0.5F);
     private final Color       color3 = new Color(1F, 0.3F, 0F, 1F);
 
     protected void drawSun(float partialTicks)
     {
         int size = (int) (getObjectSize() * SpaceManager.instance.getStarScale()) / 100;
-        
+        float time = (Minecraft.getMinecraft().world.getWorldTime() % 360);
+        float pt = partialTicks;
+        pt = 0;
+        time = 0;
+        Color color2 = new Color(1.0F, 0.3F, 0.0F, 0.2F);
+
         OpenGL.pushMatrix();
 
-        float s = 0.5F;
+        float s = 10;
         OpenGL.scale(s, s, s);
         OpenGL.enableBlend();
         OpenGL.blendClear();
@@ -216,21 +239,58 @@ public abstract class SolarSystem extends OrbitableObject implements ISolarSyste
 
         OpenGL.pushMatrix();
         sphere.cull = false;
-        sphere.setScale(size + (50));
-        OpenGL.scale(1.1F, 1F, 1.1F);
+        OpenGL.rotate(-(time + pt) * 1, 1, 1, 1);
+        sphere.setScale(size + (49));
+        OpenGL.scale(1.065F, 1F, 1.065F);
         sphere.setColor(color3);
         sphere.render();
         OpenGL.popMatrix();
 
-        OpenGL.blendFunc(GL_ONE, GL_ONE);
+        OpenGL.blendFunc(GL_ONE, GL11.GL_ONE_MINUS_CONSTANT_ALPHA);
+//        OpenGL.blendClear();
 
-        for (int i = 6; i > 0; i--)
+//        GlStateManager.cullFace(CullFace.FRONT);
+//        for (int i = 1; i >= 0; i--)
+//        {
+//            OpenGL.pushMatrix();
+//            OpenGL.rotate((time + (i * 40F) + pt), 1, 1, 0);
+//            sphere.cull = false;
+//            sphere.setScale(size + (48 + (i * 0.75F)));
+//            sphere.setColor(color);
+//            sphere.render();
+//            OpenGL.popMatrix();
+//        }
+//
+//        for (int i = 4; i >= 0; i--)
+//        {
+//            OpenGL.pushMatrix();
+//            OpenGL.rotate((time + pt), 1, 1, 0);
+//            sphere.cull = true;
+//            sphere.setScale(size + (51 + (i * 0.75F)));
+//            sphere.setColor(color2);
+//            sphere.render();
+//            OpenGL.popMatrix();
+//        }
+
+        GlStateManager.cullFace(CullFace.BACK);
+        for (int i = 0; i <= 5; i++)
         {
             OpenGL.pushMatrix();
-            OpenGL.rotate((Minecraft.getMinecraft().world.getWorldTime() % 360 * 3) + partialTicks, 1, 1, 0);
-            sphere.cull = false;
-            sphere.setScale(size + (49 + i) * 1);
-            sphere.setColor(i == 5 ? color : color);
+            OpenGL.rotate((time + (i * 40F) + pt), 1, 1, 0);
+            sphere.cull = true;
+            sphere.setScale(size + (48 + (i * 0.75F)));
+            sphere.setColor(color);
+            sphere.render();
+            OpenGL.popMatrix();
+        }
+
+        for (int i = 0; i <= 4; i++)
+        {
+            OpenGL.pushMatrix();
+            OpenGL.rotate((time + pt), 1, 1, 0);
+            sphere.cull = true;
+            sphere.setScale(size + (51 + (i * 0.75F)));
+            sphere.setColor(color2);
             sphere.render();
             OpenGL.popMatrix();
         }
