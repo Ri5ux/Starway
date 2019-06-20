@@ -15,7 +15,7 @@ public class GalaxyMilkyWay extends Galaxy implements IGalaxy
     public GalaxyMilkyWay()
     {
         this.solarSystems.add(SolarSystemSol.instance);
-        this.solarSystems.add(SolarSystemTest.instance);
+//        this.solarSystems.add(SolarSystemTest.instance);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class GalaxyMilkyWay extends Galaxy implements IGalaxy
     @Override
     public float getObjectSize()
     {
-        return 0;
+        return 300;
     }
 
     /** Lets assume this galaxy doesn't orbit anything, and leave this at 0 **/
