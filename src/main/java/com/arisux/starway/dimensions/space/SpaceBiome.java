@@ -12,9 +12,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class SpaceBiome extends BiomeGenStarway
 {
-    public static SpaceBiome space = (SpaceBiome) new SpaceBiome(new BiomeProperties("Space").setRainfall(0F).setTemperature(0F).setRainDisabled()).setRegistryName(Starway.ID, "space");
+    public static SpaceBiome space = (SpaceBiome) new SpaceBiome(new BiomeProperties("Space").setRainfall(0F).setTemperature(0F).setRainDisabled()).setRegistryName(Starway.Properties.ID, "space");
 
-    @Mod.EventBusSubscriber(modid = Starway.ID)
+    @Mod.EventBusSubscriber(modid = Starway.Properties.ID)
     public static class RegistrationHandler
     {
         @SubscribeEvent
