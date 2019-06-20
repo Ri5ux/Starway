@@ -6,6 +6,8 @@ import com.arisux.starway.ModelSphere;
 import com.arisux.starway.Renderer;
 import com.arisux.starway.SpaceManager;
 import com.arisux.starway.Starway;
+import com.arisux.starway.galaxies.milkyway.solarsystems.planets.PlanetEarth;
+import com.arisux.starway.galaxies.milkyway.solarsystems.planets.PlanetUranus;
 import com.asx.mdx.lib.client.util.Color;
 import com.asx.mdx.lib.client.util.Draw;
 import com.asx.mdx.lib.client.util.OpenGL;
@@ -100,22 +102,27 @@ public abstract class Planet extends OrbitableObject implements IPlanet
     @Override
     public void drawObjectTag(Renderer renderer, float renderPartialTicks)
     {
-        Vec3d color = new Vec3d(0F, 0.5F, 1F);
+//        Vec3d color = new Vec3d(0F, 0.5F, 1F);
         
         if (this.getDimension() != null)
         {
             WorldProvider provider = Renderer.constructWorldProvider(this.getDimension().getProvider());
-            color = provider.getFogColor(0F, 0F);
+//            color = provider.getFogColor(0F, 0F);
         }
         
-        int planetColor = Color.createHexadecimal(255, (int) (color.x * 255), (int) (color.y * 255), (int) (color.z * 255));
-        int planetSize = (int) (SpaceManager.instance.getPlanetaryScale() * this.getObjectSize());
-        int planetDiameter = planetSize / 2;
+//        int planetColor = Color.createHexadecimal(255, (int) (color.x * 255), (int) (color.y * 255), (int) (color.z * 255));
+//        int planetSize = (int) (SpaceManager.instance.getPlanetaryScale() * this.getObjectSize());
+//        int planetDiameter = planetSize / 2;
         int curPadding = renderer.getTextPadding();
+        OpenGL.rotate(-renderer.angle, 1, 0, 0);
+        OpenGL.translate(1, 1, 250);
+        render(renderPartialTicks);
+        OpenGL.disableLight();
+        float antiScale = 1F / renderer.scale;
+        OpenGL.scale(antiScale, antiScale, 1);
 
-        Draw.drawStringAlignCenter(this.getName(), 0, 0 + planetDiameter + curPadding, 0xFF00CCFF, false);
-        Draw.drawStringAlignCenter(String.format("(X: %s, Z: %s)", (int) this.pos().x, (int) this.pos().z), 0, 0 + planetDiameter + (curPadding += 10), 0xFFFFFFFF, false);
-        Draw.drawCenteredRectWithOutline(0, 0, planetSize, planetSize, 0, planetColor, 0xFF00AAFF);
+        Draw.drawStringAlignCenter(this.getName(), 0, 0 + curPadding, 0xFF00CCFF, false);
+        Draw.drawStringAlignCenter(String.format("(X: %s, Z: %s)", (int) this.pos().x, (int) this.pos().z), 0, 0 + (curPadding += 10), 0xFFFFFFFF, false);
     }
 
     @Override
@@ -127,8 +134,17 @@ public abstract class Planet extends OrbitableObject implements IPlanet
         {
             if (parentObject != null)
             {
+//                if (this instanceof PlanetEarth)
+//                System.out.println(this.getDistanceFromObjectOrbiting() * 3000000);
                 OpenGL.translate(parentObject.pos().x, parentObject.pos().z, 0);
-                SolarSystem.drawOrbitMarker(6F, distance, 0);
+                
+                System.out.println(Renderer.instance.scale);
+                
+                int markerCount = Math.round(this.getDistanceFromObjectOrbiting() * 300000 * (200F * (Math.abs(Renderer.instance.scale))));
+                
+//                if (this instanceof PlanetUranus)
+//                    System.out.println(markerCount);
+//                SolarSystem.drawOrbitMarker(renderer, markerCount, (360F / (float) markerCount) * 4, distance, 0);
             }
         }
         OpenGL.popMatrix();
