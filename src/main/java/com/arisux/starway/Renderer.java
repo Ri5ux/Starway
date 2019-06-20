@@ -2,6 +2,7 @@ package com.arisux.starway;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 import com.arisux.starway.api.Galaxy;
@@ -20,6 +21,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.EntityViewRenderEvent.CameraSetup;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -32,6 +34,14 @@ public class Renderer implements IInitEvent
     public int             tick;
     public boolean         mapEnabled;
     public float           zoom;
+    public float           scale    = 1F;
+    public float           angle    = 60F;
+    public int             offsetX;
+    public int             offsetY;
+    public int             posX;
+    public int             posXPrev;
+    public int             posY;
+    public int             posYPrev;
 
     @Override
     public void init(FMLInitializationEvent event)
@@ -44,19 +54,30 @@ public class Renderer implements IInitEvent
     {
         this.tick++;
 
-        int dwheel = Mouse.getDWheel();
-
-        if (dwheel > 0 || dwheel < 0)
-        {
-            if (zoom >= -1F)
-            {
-                zoom = zoom + (dwheel * 0.0001F);
-            }
-            else
-            {
-                zoom = -0.99F;
-            }
-        }
+        // if (mapEnabled)
+        // {
+        // int dwheel = Mouse.getDWheel();
+        //
+        // if (dwheel > 0 || dwheel < 0)
+        // {
+        // if (zoom >= -0.98F)
+        // {
+        // zoom = zoom + (dwheel * 0.0001F);
+        // }
+        // else
+        // {
+        // zoom = zoom + (dwheel * 0.00001F);
+        // }
+        // }
+        //
+        // if (Mouse.isButtonDown(0))
+        // {
+        // float multiplier = 100 * 1.4F * -zoom;
+        //
+        // offsetX += Mouse.getDX() * multiplier;
+        // offsetY -= Mouse.getDY() * multiplier;
+        // }
+        // }
 
         if (Game.minecraft().inGameHasFocus && Game.minecraft().currentScreen == null)
         {
@@ -64,6 +85,15 @@ public class Renderer implements IInitEvent
             {
                 mapEnabled = !mapEnabled;
             }
+        }
+    }
+    
+    @SubscribeEvent
+    public void setupCamera(CameraSetup event)
+    {
+        if (Minecraft.getMinecraft().player.world.provider instanceof SpaceProvider)
+        {
+            Game.minecraft().entityRenderer.farPlaneDistance = 100000;
         }
     }
 
@@ -95,21 +125,55 @@ public class Renderer implements IInitEvent
     @SubscribeEvent
     public void render(RenderTickEvent event)
     {
+        Minecraft mc = Minecraft.getMinecraft();
+        ScaledResolution resolution = new ScaledResolution(mc);
+        
         if (mapEnabled)
         {
-            GL11.glEnable(GL11.GL_BLEND);
-            Minecraft mc = Minecraft.getMinecraft();
-            ScaledResolution resolution = new ScaledResolution(mc);
-            Draw.drawRect(0, 0, resolution.getScaledWidth(), resolution.getScaledHeight(), 0xCC000000);
+            int dwheel = Mouse.getDWheel();
 
-            float scale = 1F + zoom;
-            int centerX = (int) (resolution.getScaledWidth() / 2 / scale);
-            int centerY = (int) (resolution.getScaledHeight() / 2 / scale);
+            if (dwheel > 0 || dwheel < 0)
+            {
+                if (zoom >= -0.98F)
+                {
+                    zoom = zoom + (dwheel * 0.0001F);
+                }
+                else
+                {
+                    zoom = zoom + (dwheel * 0.00001F);
+                }
+            }
+
+            if (Mouse.isButtonDown(0))
+            {
+                float multiplier = 0.25F;
+                
+                offsetX += (Mouse.getDX() * multiplier) * (Display.getWidth() / (resolution.getScaledWidth() * (1- Math.abs(zoom))));
+                offsetY -= (Mouse.getDY() * multiplier) * (Display.getHeight() / (resolution.getScaledHeight() * (1- Math.abs(zoom))));
+            }
+            
+            GL11.glEnable(GL11.GL_BLEND);
+            Draw.drawRect(0, 0, resolution.getScaledWidth(), resolution.getScaledHeight(), 0xFF000000);
+
+//             offsetX = 0;
+//             offsetY = 0;
+//             zoom = 0;
+
+            angle = 0;
+            scale = 1F + zoom;
+            posX = (int) ((resolution.getScaledWidth() / 2 + (offsetX)));
+            posY = (int) ((resolution.getScaledHeight() / 2 + (offsetY)));
 
             OpenGL.pushMatrix();
             {
+                OpenGL.translate(0, 0, 200);
+                OpenGL.translate(resolution.getScaledWidth() / 2, resolution.getScaledHeight() / 2, 0);
                 OpenGL.scale(scale, scale, 1);
-                OpenGL.translate(centerX, centerY, 1);
+//                Draw.drawRect(-500, -500, 500, 500, 0xFFFF0000);
+                OpenGL.translate(posXPrev + (posX - posXPrev) * event.renderTickTime, posYPrev + (posY - posYPrev) * event.renderTickTime, 0);
+                OpenGL.rotate(angle, 1, 0, 0);
+
+                this.drawPlayersOnMap(scale);
 
                 for (IGalaxy galaxy : Starway.getGalaxies())
                 {
@@ -119,10 +183,10 @@ public class Renderer implements IInitEvent
                     }
                     OpenGL.popMatrix();
                 }
-
-                this.drawPlayersOnMap(scale);
             }
             OpenGL.popMatrix();
+            posXPrev = posX;
+            posYPrev = posY;
         }
     }
 
@@ -175,18 +239,20 @@ public class Renderer implements IInitEvent
                     {
                         OpenGL.pushMatrix();
                         {
-                            OpenGL.translate(player.posX, player.posZ, 0);
+                            OpenGL.translate(player.posX, player.posZ, player.posY);
+                            OpenGL.rotate(-angle, 1, 0, 0);
                             OpenGL.scale(1F / scale, 1F / scale, 0);
 
                             OpenGL.pushMatrix();
                             {
+                                OpenGL.rotate(angle, 1, 0, 0);
                                 OpenGL.rotate(player.rotationYaw + 90, 0, 0, 1);
                                 OpenGL.translate(3, 0, 0);
-                                Draw.drawRect(0, -1, 6, 2, 0xFFFFFFFF);
+                                Draw.drawRect(0, -2, 10, 4, 0xFFFFFFFF);
                             }
                             OpenGL.popMatrix();
 
-                            Draw.drawRect(-1, -1, 2, 2, 0xFFFF0000);
+                            Draw.drawRect(-2, -2, 4, 4, 0xFFFF0000);
                             int curPadding = 10 + this.getTextPadding();
                             Draw.drawStringAlignCenter(player.getName(), 0, curPadding, 0xFFFF0000, false);
                             Draw.drawStringAlignCenter(String.format("(X: %s, Z: %s)", (int) player.posX, (int) player.posZ), 0, curPadding += 10, 0xFFFFFFFF, false);
