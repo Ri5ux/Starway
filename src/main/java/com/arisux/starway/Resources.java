@@ -21,10 +21,12 @@ public class Resources implements IPreInitEvent
     
     public final ResourceLocation EARTH = new ResourceLocation("starway", "textures/planets/earth.png");
     public final ResourceLocation BLACKHOLE_ACCRETION_DISC = new ResourceLocation("starway", "textures/blackholes/accretion_disc.png");
+    
+    public final ResourceLocation ARMOR_SPACESUIT_MK50_WHITE = new ResourceLocation(Starway.Properties.ID, "textures/armor/mk50_white.png");
 
     public static class Models
     {
-        public final TriangulatedWavefrontModel STARSHIP = WavefrontModelLoader.load(Starway.class, Starway.ID, "starship", "/assets/starway/models/starship");
+        public final TriangulatedWavefrontModel STARSHIP = WavefrontModelLoader.load(Starway.class, Starway.Properties.ID, "starship", "/assets/starway/models/starship");
     }
 
     @Override
