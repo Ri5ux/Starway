@@ -31,14 +31,18 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-@Mod(name = "Starway", modid = Starway.ID, version = Starway.VERSION)
+@Mod(name = "Starway", modid = Starway.Properties.ID, version = Starway.Properties.VERSION)
 public class Starway implements IMod, IPreInitEvent, IPostInitEvent, IInitEvent
 {
-    public static final String ID      = "starway";
-    public static final String VERSION = "1.0";
+    public static class Properties
+    {
+        public static final String ID      = "starway";
+        public static final String VERSION = "1.0";
+    }
 
-    @Mod.Instance(Starway.ID)
+    @Mod.Instance(Starway.Properties.ID)
     private static Starway     instance;
+    private static ItemHandler items;
     private ModContainer       container;
 
     @Override
@@ -50,11 +54,12 @@ public class Starway implements IMod, IPreInitEvent, IPostInitEvent, IInitEvent
             resources().pre(event);
         }
     }
-    
+
     @Override
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
+        System.out.println("TEST1: " + resources().ARMOR_SPACESUIT_MK50_WHITE.toString());
         galaxies().init(event);
         dimensions().init(event);
         commands().init(event);
@@ -75,10 +80,10 @@ public class Starway implements IMod, IPreInitEvent, IPostInitEvent, IInitEvent
 
     public void loadDebugTools(FMLInitializationEvent event)
     {
-//        Game.register(Starway.ID, itemStarship, "spawner.starship");
-//
-//        int entityId = 0;
-//        Game.register(EntityStarship.class, "Starship", entityId++, Starway.instance, 250, 1, true);
+        // Game.register(Starway.ID, itemStarship, "spawner.starship");
+        //
+        // int entityId = 0;
+        // Game.register(EntityStarship.class, "Starship", entityId++, Starway.instance, 250, 1, true);
 
         if (event.getSide() == Side.CLIENT)
         {
@@ -99,6 +104,11 @@ public class Starway implements IMod, IPreInitEvent, IPostInitEvent, IInitEvent
         commands().onServerStarting(event);
     }
 
+    public static ItemHandler items()
+    {
+        return items == null ? items = new ItemHandler() : items;
+    }
+
     @SideOnly(Side.CLIENT)
     public static Resources resources()
     {
@@ -108,7 +118,7 @@ public class Starway implements IMod, IPreInitEvent, IPostInitEvent, IInitEvent
     @Override
     public ModContainer container()
     {
-        return this.container == null ? this.container = Game.getModContainer(Starway.ID) : this.container;
+        return this.container == null ? this.container = Game.getModContainer(Starway.Properties.ID) : this.container;
     }
 
     public CreativeTabs tab()
@@ -118,7 +128,7 @@ public class Starway implements IMod, IPreInitEvent, IPostInitEvent, IInitEvent
 
     public String domain()
     {
-        return Starway.ID + ":";
+        return Starway.Properties.ID + ":";
     }
 
     @SideOnly(Side.CLIENT)
